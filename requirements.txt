@@ -1,4 +1,0 @@
-# La aplicación (main.py) solo usa la biblioteca estándar de Python.
-# Estas dependencias son opcionales:
-matplotlib>=3.5    # gráficas de analisis/medir_rendimiento.py
-reportlab>=3.6     # regenerar el PDF con reporte/generar_reporte.py
