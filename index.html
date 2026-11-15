@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El Huffmanificador</title>
+  <meta name="description" content="El Huffmanificador: compresión de libros de Project Gutenberg con el algoritmo de Huffman, detección de idioma y árbol de expansión mínima con Kruskal y Prim. Algoritmos en Python ejecutados en el navegador.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="web/styles.css">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script type="module" src="web/app.js"></script>
+</head>
+<body>
+  <!-- Íconos (se usan con <svg class="ico"><use href="#i-..."/></svg>) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-red" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4m0 0-5.3 5.3M12 11.5l5.3 5.3"/></symbol>
+      <symbol id="i-subir" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+      <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+      <symbol id="i-grafica" viewBox="0 0 24 24"><path d="M5 20v-8M11 20V5M17 20v-5M3 20h18"/></symbol>
+      <symbol id="i-bajar" viewBox="0 0 24 24"><path d="M12 4v11m-5-4 5 5 5-5M4 20h16"/></symbol>
+      <symbol id="i-rayo" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+      <symbol id="i-llave" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/></symbol>
+      <symbol id="i-arbol" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="3.5" cy="20" r="1.5"/><circle cx="8.5" cy="20" r="1.5"/><path d="m10.8 5.6-3.6 4.8m6-4.8 3.6 4.8M5.3 13.9l-1.3 4.6m2.7-4.6 1.3 4.6"/></symbol>
+      <symbol id="i-tabla" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></symbol>
+      <symbol id="i-bits" viewBox="0 0 24 24"><path d="M4 5v6M2.5 5H4M2.5 11h3"/><rect x="8" y="5" width="4" height="6" rx="2"/><rect x="13" y="13" width="4" height="6" rx="2"/><path d="M20 13v6M18.5 13H20M18.5 19h3"/></symbol>
+      <symbol id="i-globo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 3 2.6 15 0 18M12 3c-2.6 3-2.6 15 0 18"/></symbol>
+      <symbol id="i-comprimir" viewBox="0 0 24 24"><path d="M4 14h6v6m10-10h-6V4m0 6 7-7M3 21l7-7"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5z"/></symbol>
+      <symbol id="i-pausa" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+      <symbol id="i-sig" viewBox="0 0 24 24"><path d="M6 5l9 7-9 7zM18 5v14"/></symbol>
+      <symbol id="i-ant" viewBox="0 0 24 24"><path d="M18 5l-9 7 9 7zM6 5v14"/></symbol>
+      <symbol id="i-mas" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M11 8v6M8 11h6"/></symbol>
+      <symbol id="i-menos" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8 11h6"/></symbol>
+      <symbol id="i-centrar" viewBox="0 0 24 24"><path d="M4 9V4h5m11 5V4h-5M4 15v5h5m11-5v5h-5"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-9.5v.5"/></symbol>
+      <symbol id="i-ok" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-libro" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19"/></symbol>
+      <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+      <symbol id="i-codigo" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-12-2 14"/></symbol>
+      <symbol id="i-equipo" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2A5 5 0 0 1 22 19"/></symbol>
+      <symbol id="i-capas" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- ============================================================ ENCABEZADO -->
+  <header class="encabezado">
+    <div class="encabezado__fila">
+      <div class="marca">
+        <div class="marca__logo"><svg class="ico ico--xl"><use href="#i-red"/></svg></div>
+        <div>
+          <div class="marca__nombre">
+            <span class="degradado mono">EL HUFFMANIFICADOR</span>
+            <span class="insignia">Python · Pyodide</span>
+          </div>
+          <p class="marca__sub">Algoritmos voraces · Compresión de Huffman y Árbol de Expansión Mínima</p>
+        </div>
+      </div>
+      <nav class="navegacion" role="tablist">
+        <button class="nav-btn activa" data-panel="panel-huffman"><svg class="ico"><use href="#i-comprimir"/></svg><span>Huffman</span></button>
+        <button class="nav-btn" data-panel="panel-mst"><svg class="ico"><use href="#i-red"/></svg><span>Expansión mínima</span></button>
+        <button class="nav-btn" data-panel="panel-explicacion"><svg class="ico"><use href="#i-info"/></svg><span>¿Cómo funciona?</span></button>
+        <a class="nav-btn nav-btn--repo" href="https://github.com/AnalisisDeAlgoritmosIDC/Huffman" target="_blank" rel="noopener"><svg class="ico"><use href="#i-codigo"/></svg><span>Repositorio</span></a>
+        <span id="estado-python" class="estado estado--cargando"><i class="punto"></i>Cargando Python…</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <!-- ============================================================ HUFFMAN -->
+    <section id="panel-huffman" class="panel activo">
+      <div class="rejilla-superior">
+        <!-- Entrada de datos -->
+        <div class="vidrio entrada">
+          <div class="titulo-seccion">
+            <h2 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-libro"/></svg> Entrada de datos · Project Gutenberg</h2>
+          </div>
+          <form id="form-buscar" class="buscador">
+            <div class="campo-icono">
+              <svg class="ico"><use href="#i-buscar"/></svg>
+              <input id="q" type="search" placeholder="Título o autor: Quijote, Poe, Alice…" autocomplete="off" required>
+            </div>
+            <select id="idioma" aria-label="Idioma">
+              <option value="">Todos</option>
+              <option value="es" selected>Español</option>
+              <option value="en">Inglés</option>
+              <option value="fr">Francés</option>
+              <option value="de">Alemán</option>
+              <option value="it">Italiano</option>
+              <option value="pt">Portugués</option>
+            </select>
+            <button type="submit" class="btn btn--neon"><svg class="ico"><use href="#i-buscar"/></svg><span>Buscar</span></button>
+          </form>
+          <div id="resultados" class="resultados"></div>
+
+          <div class="divisor"><span>o sube tu archivo</span></div>
+
+          <label id="zona-soltar" class="zona-soltar">
+            <input type="file" id="archivo" accept=".txt,.mc,text/plain" hidden>
+            <div class="zona-soltar__icono"><svg class="ico ico--lg"><use href="#i-subir"/></svg></div>
+            <p class="zona-soltar__texto">Arrastra tu archivo <span class="mono rosa">.txt</span> o <span class="mono violeta">.mc</span> aquí</p>
+            <p class="zona-soltar__sub">o haz clic para explorar tu equipo</p>
+          </label>
+          <label class="check"><input type="checkbox" id="quitar-licencia"> Quitar encabezado y licencia de Gutenberg antes de comprimir</label>
+        </div>
+
+        <!-- Métricas -->
+        <div class="vidrio metricas-panel">
+          <div class="titulo-seccion titulo-seccion--linea">
+            <h2 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-grafica"/></svg> Métricas de compresión</h2>
+            <span id="insignia-estado" class="estado estado--listo"><i class="punto"></i>ESPERANDO LIBRO</span>
+          </div>
+          <div class="libro-actual">
+            <p class="mono tenue diminuto">LIBRO CARGADO</p>
+            <h3 id="libro-titulo">Ninguno todavía</h3>
+            <p id="libro-detalle" class="tenue pequeno">Busca un libro en Gutenberg o sube un .txt para comenzar.</p>
+          </div>
+          <div class="tarjetas">
+            <div class="tarjeta-metrica"><span class="tm-titulo">Tamaño original</span><strong id="m-original" class="tm-valor">—</strong><span id="m-original-sub" class="tm-sub">8 bits por carácter</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Comprimido .mc</span><strong id="m-huf" class="tm-valor fucsia">—</strong><span id="m-huf-sub" class="tm-sub">—</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Ahorro</span><strong id="m-ahorro" class="tm-valor rosa">—</strong><span id="m-ahorro-sub" class="tm-sub rosa">—</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Entropía Shannon</span><strong id="m-entropia" class="tm-valor violeta">—</strong><span id="m-bits" class="tm-sub">Prom. bits/carácter</span></div>
+            <div class="tarjeta-metrica tarjeta-metrica--ancha"><span class="tm-titulo"><svg class="ico ico--sm"><use href="#i-globo"/></svg> Idioma detectado</span><strong id="m-idioma" class="tm-valor">—</strong><span id="m-idioma-sub" class="tm-sub">—</span></div>
+            <div class="tarjeta-metrica tarjeta-metrica--ancha"><span class="tm-titulo"><svg class="ico ico--sm"><use href="#i-ok"/></svg> Decodificado = original</span><strong id="m-verif" class="tm-valor">—</strong><span id="m-verif-sub" class="tm-sub">Se comprueba byte por byte</span></div>
+          </div>
+          <div class="progreso">
+            <div class="progreso__fila"><span>Reducción del tamaño del archivo</span><span id="progreso-etiqueta" class="fucsia">0 %</span></div>
+            <div class="progreso__barra"><div id="progreso-relleno" class="progreso__relleno" style="width:0%"></div></div>
+          </div>
+          <div class="acciones">
+            <button id="btn-codificar" class="btn btn--neon btn--grande" disabled><svg class="ico"><use href="#i-rayo"/></svg><span>CODIFICAR</span></button>
+            <button id="btn-decodificar" class="btn btn--contorno" disabled><svg class="ico"><use href="#i-llave"/></svg><span>DECODIFICAR</span></button>
+            <button id="btn-bajar-huf" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>.mc</span></button>
+            <button id="btn-bajar-txt" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>.txt decodificado</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vistas detalladas -->
+      <section class="vidrio vistas">
+        <nav class="pestanas">
+          <button class="pestana activa" data-sub="sub-arbol"><svg class="ico"><use href="#i-arbol"/></svg>Árbol</button>
+          <button class="pestana" data-sub="sub-tabla"><svg class="ico"><use href="#i-tabla"/></svg>Frecuencias y códigos</button>
+          <button class="pestana" data-sub="sub-ahorro"><svg class="ico"><use href="#i-comprimir"/></svg>Ahorro interactivo</button>
+          <button class="pestana" data-sub="sub-idioma"><svg class="ico"><use href="#i-globo"/></svg>Idioma</button>
+          <button class="pestana" data-sub="sub-bits"><svg class="ico"><use href="#i-bits"/></svg>Bitstream y decodificador</button>
+          <button class="pestana" data-sub="sub-resultados"><svg class="ico"><use href="#i-grafica"/></svg>Resultados</button>
+        </nav>
+
+        <div class="vistas__cuerpo">
+          <div id="vacio" class="vacio">
+            <div class="vacio__icono"><svg class="ico ico--xl"><use href="#i-arbol"/></svg></div>
+            <h3 class="mono">Árbol de Huffman no generado</h3>
+            <p>Elige un libro de Project Gutenberg o sube un archivo .txt para construir el árbol, ver los códigos y medir cuánto se ahorra.</p>
+          </div>
+
+          <!-- ÁRBOL -->
+          <div id="sub-arbol" class="subpanel activo">
+            <div class="barra">
+              <div class="segmentado" id="selector-vista">
+                <button class="activo" data-vista="jerarquico">Jerárquico</button>
+                <button data-vista="radial">Radial</button>
+                <button data-vista="explorador">Explorador</button>
+                <button data-vista="construccion">Construcción paso a paso</button>
+              </div>
+              <div class="barra__zoom" id="controles-zoom">
+                <button class="btn-icono" id="zoom-mas" title="Acercar"><svg class="ico"><use href="#i-mas"/></svg></button>
+                <button class="btn-icono" id="zoom-menos" title="Alejar"><svg class="ico"><use href="#i-menos"/></svg></button>
+                <button class="btn btn--chico" id="zoom-centrar"><svg class="ico"><use href="#i-centrar"/></svg><span>Centrar</span></button>
+              </div>
+            </div>
+            <div class="leyenda-arbol">
+              <span><i class="bola bola--hoja"></i>Hoja (carácter)</span>
+              <span><i class="bola bola--interno"></i>Nodo interno (suma)</span>
+              <span><b class="rosa">0</b> izquierda · <b class="violeta">1</b> derecha</span>
+              <span id="info-arbol" class="tenue"></span>
+            </div>
+            <div id="lienzo-arbol" class="lienzo lineas"></div>
+            <div id="construccion" class="construccion oculto"></div>
+          </div>
+
+          <!-- TABLA -->
+          <div id="sub-tabla" class="subpanel">
+            <div class="barra">
+              <div class="campo-icono campo-icono--filtro">
+                <svg class="ico"><use href="#i-buscar"/></svg>
+                <input id="filtro-tabla" type="text" placeholder="Filtrar por carácter o código…">
+              </div>
+              <span id="simbolos" class="insignia insignia--grande">Símbolos únicos: 0</span>
+            </div>
+            <p class="tenue pequeno">Haz clic en un carácter para ver su camino en el árbol.</p>
+            <div class="tabla-scroll">
+              <table class="tabla" id="tabla-codigos">
+                <thead><tr><th>Carácter</th><th>Unicode</th><th class="num">Frecuencia</th><th>Probabilidad</th><th>Código Huffman</th><th class="num">Bits</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AHORRO -->
+          <div id="sub-ahorro" class="subpanel"><div id="ahorro"></div></div>
+
+          <!-- IDIOMA -->
+          <div id="sub-idioma" class="subpanel"><div id="idioma-detalle"></div></div>
+
+          <!-- BITSTREAM -->
+          <div id="sub-bits" class="subpanel">
+            <div class="bloque">
+              <div class="titulo-seccion">
+                <h3 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-bits"/></svg> Bitstream resultante</h3>
+                <button id="btn-copiar" class="btn btn--chico" disabled><svg class="ico"><use href="#i-copiar"/></svg><span>Copiar bits</span></button>
+              </div>
+              <div id="txt-bits" class="caja-bits mono"><span class="tenue cursiva">Presiona CODIFICAR para ver la cadena de bits…</span></div>
+            </div>
+            <div class="vidrio bloque decodificador">
+              <h3 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-llave"/></svg> Decodificador de verificación (sin pérdida)</h3>
+              <p class="tenue pequeno">Reconstruye el texto recorriendo el árbol bit por bit: 0 = izquierda, 1 = derecha; al llegar a una hoja se escribe su carácter.</p>
+              <div class="dos-columnas">
+                <div><label class="etiqueta mono">Texto original</label><pre id="txt-original" class="caja-texto"></pre></div>
+                <div><label class="etiqueta mono">Texto decodificado</label><pre id="txt-decodificado" class="caja-texto"><span class="tenue cursiva">El texto reconstruido aparecerá aquí…</span></pre></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESULTADOS -->
+          <div id="sub-resultados" class="subpanel">
+            <div class="dos-columnas dos-columnas--resultados">
+              <table class="tabla tabla--datos" id="tabla-resultados"><tbody></tbody></table>
+              <div id="grafica-tamanos" class="grafica"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ MST -->
+    <section id="panel-mst" class="panel">
+      <div class="mst">
+        <aside class="vidrio mst__controles">
+          <h3 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-red"/></svg> Grafo</h3>
+          <label class="campo">Nodos <input type="number" id="mst-nodos" min="3" max="40" value="12"></label>
+          <label class="campo">Densidad <input type="range" id="mst-densidad" min="0.1" max="1" step="0.05" value="0.4"></label>
+          <label class="campo">Semilla <input type="number" id="mst-semilla" value="7"></label>
+          <button class="btn btn--contorno" id="mst-generar"><svg class="ico"><use href="#i-capas"/></svg><span>Generar grafo</span></button>
+          <h3 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-arbol"/></svg> Algoritmo</h3>
+          <div class="segmentado segmentado--lleno">
+            <label><input type="radio" name="algoritmo" value="Kruskal" checked><span>Kruskal</span></label>
+            <label><input type="radio" name="algoritmo" value="Prim"><span>Prim</span></label>
+          </div>
+          <label class="campo">Inicio (Prim) <select id="mst-inicio"></select></label>
+          <button class="btn btn--neon" id="mst-completo"><svg class="ico"><use href="#i-rayo"/></svg><span>Ejecutar completo</span></button>
+          <div class="fila-botones">
+            <button class="btn btn--chico" id="mst-paso"><svg class="ico"><use href="#i-sig"/></svg><span>Paso</span></button>
+            <button class="btn btn--chico" id="mst-animar"><svg class="ico"><use href="#i-play"/></svg><span>Animar</span></button>
+          </div>
+          <button class="btn btn--chico" id="mst-reiniciar"><span>Reiniciar</span></button>
+          <div class="mst__resultado">
+            <strong id="mst-peso" class="degradado">—</strong>
+            <span class="tenue pequeno">peso total del árbol</span>
+            <p id="mst-detalle" class="pequeno"></p>
+          </div>
+        </aside>
+        <div class="vidrio mst__lienzo">
+          <div id="lienzo-grafo" class="lienzo-grafo lineas"></div>
+          <div class="leyenda-arbol">
+            <span><i class="linea-ley" style="background:#e879f9"></i>en el árbol</span>
+            <span><i class="linea-ley" style="background:#fde047"></i>evaluando</span>
+            <span><i class="linea-ley linea-ley--punteada"></i>rechazada</span>
+            <span><i class="linea-ley" style="background:rgba(244,114,182,.25)"></i>sin evaluar</span>
+          </div>
+        </div>
+        <div class="vidrio mst__bitacora">
+          <h3 class="rotulo rotulo--violeta"><svg class="ico"><use href="#i-tabla"/></svg> Bitácora</h3>
+          <div class="tabla-scroll tabla-scroll--alta">
+            <table class="tabla" id="mst-tabla">
+              <thead><tr><th class="num">#</th><th>Arista</th><th class="num">Peso</th><th>Decisión</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ EXPLICACIÓN -->
+    <section id="panel-explicacion" class="panel">
+      <div class="explicacion">
+        <article class="vidrio">
+          <h2 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-rayo"/></svg> La idea: algoritmos voraces</h2>
+          <p>Un algoritmo <b>voraz</b> toma en cada paso la decisión que se ve mejor en ese momento y nunca la deshace.
+            No siempre funciona, pero en estos tres problemas está demostrado que llega a la solución óptima.</p>
+        </article>
+        <article class="vidrio">
+          <h2 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-comprimir"/></svg> Huffman: comprimir texto</h2>
+          <p>Un <code>.txt</code> guarda cada carácter con 8 bits, aunque unos aparezcan muchísimo más que otros.
+            Huffman da <b>códigos cortos a los caracteres frecuentes</b> y largos a los raros.</p>
+          <ol>
+            <li><b>Contar</b> cuántas veces aparece cada carácter.</li>
+            <li><b>Construir el árbol:</b> sacar los <b>dos nodos menos frecuentes</b> de una cola de prioridad, unirlos en un nodo que vale la suma y regresarlo a la cola. Repetir hasta que quede uno (la raíz).</li>
+            <li><b>Códigos:</b> recorrer el árbol; izquierda = <code>0</code>, derecha = <code>1</code>.</li>
+            <li><b>Codificar:</b> cambiar cada carácter por su código y empaquetar los bits en bytes (archivo <code>.mc</code>, que también guarda la tabla de frecuencias).</li>
+            <li><b>Decodificar:</b> leer bit por bit bajando por el árbol; al llegar a una hoja se escribe su carácter y se vuelve a la raíz.</li>
+          </ol>
+          <p>Ningún código es el inicio de otro (<b>código prefijo</b>), por eso no hay ambigüedad al decodificar.
+            Construir el árbol cuesta <code>O(n log n)</code> con <i>n</i> = caracteres distintos.</p>
+        </article>
+        <article class="vidrio">
+          <h2 class="rotulo rotulo--violeta"><svg class="ico"><use href="#i-red"/></svg> Árbol de expansión mínima</h2>
+          <p>Conectar todos los nodos de un grafo con el <b>menor costo total</b> y sin ciclos.</p>
+          <ul>
+            <li><b>Kruskal:</b> ordena las aristas de la más barata a la más cara y las va tomando; descarta las que formarían un ciclo (Union-Find). <code>O(E log E)</code>.</li>
+            <li><b>Prim:</b> empieza en un nodo y crece agregando la arista más barata que sale del árbol hacia un nodo nuevo (heap). <code>O(E log V)</code>.</li>
+          </ul>
+          <p>Los dos siempre llegan al mismo peso mínimo; la página lo comprueba al terminar.</p>
+        </article>
+        <article class="vidrio">
+          <h2 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-globo"/></svg> Detección de idioma</h2>
+          <p>Se cuentan las <b>palabras vacías</b> de cada idioma (artículos, preposiciones, conjunciones: <i>de, la, que, the, and, der, und…</i>).
+            Forman casi la mitad de cualquier texto, así que el idioma con más coincidencias es el del libro. Las letras propias (ñ, ç, ß, ã) suman un poco más.
+            Antes se quita el encabezado de Gutenberg, que siempre está en inglés.</p>
+        </article>
+        <article class="vidrio explicacion__ancha equipo">
+          <h2 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-equipo"/></svg> Equipo</h2>
+          <div class="equipo__lista">
+            <div class="integrante"><span class="integrante__inicial">CR</span><div><b>Carlos Adrian Ramirez Gutiérrez</b><span>Interfaz, página y reporte</span></div></div>
+            <div class="integrante"><span class="integrante__inicial">IS</span><div><b>Isaac Saldivar Zaldivar</b><span>Algoritmo de Huffman y detección de idioma</span></div></div>
+            <div class="integrante"><span class="integrante__inicial">DP</span><div><b>Daniel Padilla Echeverria</b><span>Árbol de expansión mínima, análisis y servidor</span></div></div>
+          </div>
+          <a class="btn btn--neon equipo__repo" href="https://github.com/AnalisisDeAlgoritmosIDC/Huffman" target="_blank" rel="noopener"><svg class="ico"><use href="#i-codigo"/></svg><span>Ver el código en GitHub · AnalisisDeAlgoritmosIDC/Huffman</span></a>
+        </article>
+        <article class="vidrio explicacion__ancha">
+          <h2 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-info"/></svg> ¿Cómo está hecha esta página?</h2>
+          <p>Los algoritmos están escritos en <b>Python</b> (carpetas <code>huffman/</code>, <code>mst/</code> e <code>idioma/</code>)
+            y se ejecutan en tu navegador con <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a>. JavaScript solo dibuja la interfaz.
+            El buscador consulta <a href="https://www.gutenberg.org" target="_blank" rel="noopener">gutenberg.org</a> a través de un pequeño servidor (Cloudflare Worker),
+            porque Gutenberg no permite que otras páginas lean sus libros directamente.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie mono">
+    <div class="contenedor pie__fila">
+      <span>EL HUFFMANIFICADOR · Análisis de Algoritmos · CUCEI, Universidad de Guadalajara</span>
+      <span>Carlos Adrian Ramirez Gutiérrez · Isaac Saldivar Zaldivar · Daniel Padilla Echeverria</span>
+      <span><a href="https://github.com/AnalisisDeAlgoritmosIDC/Huffman" target="_blank" rel="noopener">github.com/AnalisisDeAlgoritmosIDC/Huffman</a> · Libros de dominio público de Project Gutenberg</span>
+    </div>
+  </footer>
+
+  <div id="cubierta" class="cubierta oculto"><div class="cubierta__caja vidrio"><div class="giro"></div><p id="cubierta-texto" class="mono">Procesando…</p></div></div>
+  <div id="avisos" class="avisos"></div>
+</body>
+</html>
