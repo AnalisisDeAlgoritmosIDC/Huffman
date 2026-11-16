@@ -1,0 +1,16 @@
+# Archivos que NO se publican en la página (solo se sirven index.html, web/, huffman/, mst/ e idioma/)
+.git
+.gitignore
+.assetsignore
+wrangler.jsonc
+worker/
+tests/
+analisis/
+libros/
+capturas/
+salidas/
+reporte/
+requirements.txt
+README.md
+__pycache__
+*.pyc
