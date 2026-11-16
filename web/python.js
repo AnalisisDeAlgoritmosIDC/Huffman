@@ -58,7 +58,8 @@ export async function ocupado(texto, tarea) {
   document.getElementById("cubierta-texto").textContent = texto;
   cubierta.classList.remove("oculto");
   // Dar tiempo al navegador de pintar la cubierta antes de bloquear con Python
-  await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 30)));
+  // (setTimeout y no requestAnimationFrame: este último nunca se dispara si la pestaña está en segundo plano)
+  await new Promise((r) => setTimeout(r, 50));
   try {
     await listo;
     return await tarea();
@@ -95,7 +96,7 @@ export function aviso(mensaje, tipo = "info") {
   caja.className = "aviso aviso--" + tipo;
   caja.innerHTML = `<svg class="ico"><use href="#${icono}"/></svg><span>${escaparHTML(mensaje)}</span>`;
   document.getElementById("avisos").appendChild(caja);
-  requestAnimationFrame(() => caja.classList.add("visible"));
+  setTimeout(() => caja.classList.add("visible"), 20);
   setTimeout(() => {
     caja.classList.remove("visible");
     setTimeout(() => caja.remove(), 300);
