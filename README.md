@@ -71,6 +71,7 @@ mst/
 idioma/
   detector.py           detección de idioma
 worker/index.js         Worker de Cloudflare: /api/buscar y /api/libro/<id>
+functions/api/[[ruta]].js  lo mismo para Cloudflare Pages
 wrangler.jsonc          configuración de Cloudflare
 .assetsignore           carpetas que no se publican en la página
 tests/                  pruebas unitarias (unittest)
@@ -83,23 +84,25 @@ reporte/                reporte en PDF y script que lo genera
 
 ## Publicar en Cloudflare
 
-**Desde GitHub (se actualiza solo con cada `git push`):**
-1. En Cloudflare: **Workers & Pages → Create → Import a repository** y elegir
+**Opción A · Cloudflare Pages conectado a GitHub (la que usamos: huffmanificador.pages.dev)**
+1. **Workers & Pages → Create → Pages → Import an existing Git repository** y elegir
    `AnalisisDeAlgoritmosIDC/Huffman`.
-2. Dejar el *build command* vacío; el *deploy command* es `npx wrangler deploy` (lee `wrangler.jsonc` solo).
-3. **Deploy**.
+2. *Framework preset*: **None** · *Build command*: vacío · *Build output directory*: `/`
+3. **Save and Deploy**. Cada `git push` vuelve a publicar la página.
 
-**Desde tu compu (necesita Node.js):**
-```bash
-npx wrangler login
-npx wrangler deploy
-```
+El buscador funciona gracias a `functions/api/[[ruta]].js`, que Pages ejecuta como servidor y que reutiliza
+la lógica de `worker/index.js`.
+
+**Opción B · Cloudflare Workers**
+- Desde GitHub: **Workers & Pages → Create → Import a repository**, *build command* vacío y *deploy command*
+  `npx wrangler deploy`.
+- Desde tu compu (necesita Node.js): `npx wrangler login` y luego `npx wrangler deploy`.
 
 Para probarla en local: `npx wrangler dev` y abrir http://localhost:8787. Si abres `index.html` con doble clic
-no funciona, porque el navegador no deja cargar los `.py` desde un archivo local.
+no funciona: el navegador bloquea el código de la página (la propia página muestra un aviso).
 
-> El botón "Upload your static files" de Cloudflare **no sirve** para este proyecto: no publica el Worker y el
-> buscador de Gutenberg no funcionaría.
+> No usen la subida manual de archivos ("Upload your static files" / arrastrar la carpeta): no publica el
+> servidor del buscador y es fácil que se queden archivos fuera.
 
 ## Pruebas y análisis (opcional, con Python instalado)
 
