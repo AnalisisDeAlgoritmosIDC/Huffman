@@ -5,7 +5,7 @@ import { iniciarHuffman } from "./huffman_ui.js";
 import { iniciarBuscador } from "./buscador.js";
 import { iniciarMST } from "./mst_ui.js";
 
-document.querySelectorAll(".nav-btn").forEach((boton) => {
+document.querySelectorAll(".nav-btn[data-panel]").forEach((boton) => {
   boton.addEventListener("click", () => {
     document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("activa", b === boton));
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("activo", p.id === boton.dataset.panel));
