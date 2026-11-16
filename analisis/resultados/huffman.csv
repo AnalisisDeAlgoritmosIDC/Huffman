@@ -1,0 +1,5 @@
+libro,caracteres,distintos,original_B,huf_B,ahorro_%,bits_promedio,entropia,altura,t_frecuencias_s,t_arbol_codigos_s,t_codificar_s,t_decodificar_s,correcto
+alice_in_wonderland,144395,73,144395,83243,42.35,4.5868,4.5459,17,0.0042,0.00013,0.0055,0.0252,True
+hamlet,162881,67,162881,94325,42.09,4.6123,4.569,18,0.0054,0.00018,0.0073,0.0314,True
+moby_dick,1242990,82,1242990,711849,42.73,4.5783,4.5449,18,0.0432,0.00022,0.063,0.247,True
+king_james_bible,4332554,75,4332554,2480892,42.74,4.5801,4.5421,19,0.117,0.00018,0.2005,0.9381,True
