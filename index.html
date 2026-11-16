@@ -41,6 +41,7 @@
       <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
       <symbol id="i-codigo" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-12-2 14"/></symbol>
       <symbol id="i-equipo" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2A5 5 0 0 1 22 19"/></symbol>
+      <symbol id="i-inspector" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h5"/><path d="M14 3v5h5M19 8l-5-5"/><circle cx="16.5" cy="16.5" r="3"/><path d="m21 21-2.4-2.4"/></symbol>
       <symbol id="i-capas" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
     </defs>
   </svg>
@@ -60,6 +61,7 @@
       </div>
       <nav class="navegacion" role="tablist">
         <button class="nav-btn activa" data-panel="panel-huffman"><svg class="ico"><use href="#i-comprimir"/></svg><span>Huffman</span></button>
+        <button class="nav-btn" data-panel="panel-inspector"><svg class="ico"><use href="#i-inspector"/></svg><span>Inspector .mc</span></button>
         <button class="nav-btn" data-panel="panel-mst"><svg class="ico"><use href="#i-red"/></svg><span>Expansión mínima</span></button>
         <button class="nav-btn" data-panel="panel-explicacion"><svg class="ico"><use href="#i-info"/></svg><span>¿Cómo funciona?</span></button>
         <a class="nav-btn nav-btn--repo" href="https://github.com/AnalisisDeAlgoritmosIDC/Huffman" target="_blank" rel="noopener"><svg class="ico"><use href="#i-codigo"/></svg><span>Repositorio</span></a>
@@ -71,6 +73,14 @@
   <main class="contenedor">
     <!-- ============================================================ HUFFMAN -->
     <section id="panel-huffman" class="panel activo">
+      <ol class="flujo" id="flujo" aria-label="Flujo de trabajo">
+        <li data-paso="1"><span class="flujo__n">1</span><span>Buscar libro / subir .txt</span></li>
+        <li data-paso="2"><span class="flujo__n">2</span><span>Analizar frecuencias</span></li>
+        <li data-paso="3"><span class="flujo__n">3</span><span>Construir Huffman</span></li>
+        <li data-paso="4"><span class="flujo__n">4</span><span>Comprimir a .mc</span></li>
+        <li data-paso="5"><span class="flujo__n">5</span><span>Inspeccionar</span></li>
+        <li data-paso="6"><span class="flujo__n">6</span><span>Descomprimir y verificar</span></li>
+      </ol>
       <div class="rejilla-superior">
         <!-- Entrada de datos -->
         <div class="vidrio entrada">
@@ -100,8 +110,8 @@
           <label id="zona-soltar" class="zona-soltar">
             <input type="file" id="archivo" accept=".txt,.mc,text/plain" hidden>
             <div class="zona-soltar__icono"><svg class="ico ico--lg"><use href="#i-subir"/></svg></div>
-            <p class="zona-soltar__texto">Arrastra tu archivo <span class="mono rosa">.txt</span> o <span class="mono violeta">.mc</span> aquí</p>
-            <p class="zona-soltar__sub">o haz clic para explorar tu equipo</p>
+            <p class="zona-soltar__texto">Arrastra tu archivo <span class="mono rosa">.txt</span> aquí</p>
+            <p class="zona-soltar__sub">o haz clic para explorar tu equipo · un <span class="mono violeta">.mc</span> se abre en el Inspector</p>
           </label>
           <label class="check"><input type="checkbox" id="quitar-licencia"> Quitar encabezado y licencia de Gutenberg antes de comprimir</label>
         </div>
@@ -123,17 +133,18 @@
             <div class="tarjeta-metrica"><span class="tm-titulo">Ahorro</span><strong id="m-ahorro" class="tm-valor rosa">—</strong><span id="m-ahorro-sub" class="tm-sub rosa">—</span></div>
             <div class="tarjeta-metrica"><span class="tm-titulo">Entropía Shannon</span><strong id="m-entropia" class="tm-valor violeta">—</strong><span id="m-bits" class="tm-sub">Prom. bits/carácter</span></div>
             <div class="tarjeta-metrica tarjeta-metrica--ancha"><span class="tm-titulo"><svg class="ico ico--sm"><use href="#i-globo"/></svg> Idioma detectado</span><strong id="m-idioma" class="tm-valor">—</strong><span id="m-idioma-sub" class="tm-sub">—</span></div>
-            <div class="tarjeta-metrica tarjeta-metrica--ancha"><span class="tm-titulo"><svg class="ico ico--sm"><use href="#i-ok"/></svg> Decodificado = original</span><strong id="m-verif" class="tm-valor">—</strong><span id="m-verif-sub" class="tm-sub">Se comprueba byte por byte</span></div>
+            <div class="tarjeta-metrica tarjeta-metrica--ancha"><span class="tm-titulo"><svg class="ico ico--sm"><use href="#i-ok"/></svg> Recuperado = original</span><strong id="m-verif" class="tm-valor">—</strong><span id="m-verif-sub" class="tm-sub">Se comprueba byte por byte</span></div>
           </div>
           <div class="progreso">
             <div class="progreso__fila"><span>Reducción del tamaño del archivo</span><span id="progreso-etiqueta" class="fucsia">0 %</span></div>
             <div class="progreso__barra"><div id="progreso-relleno" class="progreso__relleno" style="width:0%"></div></div>
           </div>
           <div class="acciones">
-            <button id="btn-codificar" class="btn btn--neon btn--grande" disabled><svg class="ico"><use href="#i-rayo"/></svg><span>CODIFICAR</span></button>
-            <button id="btn-decodificar" class="btn btn--contorno" disabled><svg class="ico"><use href="#i-llave"/></svg><span>DECODIFICAR</span></button>
+            <button id="btn-codificar" class="btn btn--neon btn--grande" disabled><svg class="ico"><use href="#i-rayo"/></svg><span>COMPRIMIR</span></button>
+            <button id="btn-inspeccionar" class="btn btn--contorno" disabled><svg class="ico"><use href="#i-inspector"/></svg><span>INSPECCIONAR</span></button>
+            <button id="btn-decodificar" class="btn btn--contorno" disabled><svg class="ico"><use href="#i-llave"/></svg><span>DESCOMPRIMIR</span></button>
             <button id="btn-bajar-huf" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>.mc</span></button>
-            <button id="btn-bajar-txt" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>.txt decodificado</span></button>
+            <button id="btn-bajar-txt" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>.txt recuperado</span></button>
           </div>
         </div>
       </div>
@@ -235,6 +246,88 @@
       </section>
     </section>
 
+    <!-- ============================================================ INSPECTOR -->
+    <section id="panel-inspector" class="panel">
+      <div class="rejilla-superior rejilla-superior--inspector">
+        <div class="vidrio entrada">
+          <div class="titulo-seccion">
+            <h2 class="rotulo rotulo--violeta"><svg class="ico"><use href="#i-inspector"/></svg> Inspector de archivos .mc</h2>
+          </div>
+          <p class="pequeno tenue">Examina la estructura de un archivo comprimido <b>sin el .txt original</b>: primero se leen el
+            encabezado, la tabla de frecuencias y los datos; la descompresión solo ocurre cuando presionas DESCOMPRIMIR.</p>
+          <label id="zona-mc" class="zona-soltar" style="margin-top:14px">
+            <input type="file" id="archivo-mc" accept=".mc" hidden>
+            <div class="zona-soltar__icono"><svg class="ico ico--lg"><use href="#i-inspector"/></svg></div>
+            <p class="zona-soltar__texto">Arrastra un archivo <span class="mono violeta">.mc</span> aquí</p>
+            <p class="zona-soltar__sub">o haz clic para elegirlo</p>
+          </label>
+          <button id="insp-usar-actual" class="btn btn--chico" style="margin-top:12px" disabled><svg class="ico"><use href="#i-comprimir"/></svg><span>Inspeccionar el .mc que acabo de comprimir</span></button>
+        </div>
+        <div class="vidrio metricas-panel">
+          <div class="titulo-seccion titulo-seccion--linea">
+            <h2 class="rotulo rotulo--fucsia"><svg class="ico"><use href="#i-tabla"/></svg> Metadatos del archivo</h2>
+            <span id="insp-estado" class="estado estado--listo"><i class="punto"></i>SIN ARCHIVO</span>
+          </div>
+          <div class="libro-actual">
+            <p class="mono tenue diminuto">ARCHIVO</p>
+            <h3 id="insp-nombre">Ningún archivo cargado</h3>
+            <p id="insp-detalle" class="tenue pequeno">Comprime un libro en la sección Huffman o arrastra aquí un .mc.</p>
+          </div>
+          <div class="tarjetas" id="insp-tarjetas">
+            <div class="tarjeta-metrica"><span class="tm-titulo">Tamaño original</span><strong id="i-original" class="tm-valor">—</strong><span id="i-original-sub" class="tm-sub">guardado en el encabezado</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Tamaño .mc</span><strong id="i-mc" class="tm-valor fucsia">—</strong><span id="i-mc-sub" class="tm-sub">—</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Ahorrado</span><strong id="i-ahorro" class="tm-valor rosa">—</strong><span id="i-ahorro-sub" class="tm-sub rosa">—</span></div>
+            <div class="tarjeta-metrica"><span class="tm-titulo">Símbolos</span><strong id="i-simbolos" class="tm-valor violeta">—</strong><span id="i-simbolos-sub" class="tm-sub">—</span></div>
+          </div>
+          <div class="acciones">
+            <button id="insp-descomprimir" class="btn btn--neon btn--grande" disabled><svg class="ico"><use href="#i-llave"/></svg><span>DESCOMPRIMIR</span></button>
+            <button id="insp-bajar" class="btn btn--chico" disabled><svg class="ico"><use href="#i-bajar"/></svg><span>Descargar .txt recuperado</span></button>
+          </div>
+        </div>
+      </div>
+
+      <section class="vidrio vistas">
+        <nav class="pestanas" id="insp-pestanas">
+          <button class="pestana activa" data-isub="isub-estructura"><svg class="ico"><use href="#i-capas"/></svg>Estructura</button>
+          <button class="pestana" data-isub="isub-bytes"><svg class="ico"><use href="#i-bits"/></svg>Bytes y bits</button>
+          <button class="pestana" data-isub="isub-tabla"><svg class="ico"><use href="#i-tabla"/></svg>Frecuencias y códigos</button>
+          <button class="pestana" data-isub="isub-arbol"><svg class="ico"><use href="#i-arbol"/></svg>Árbol reconstruido</button>
+          <button class="pestana" data-isub="isub-texto"><svg class="ico"><use href="#i-llave"/></svg>Texto recuperado</button>
+        </nav>
+        <div class="vistas__cuerpo">
+          <div id="insp-vacio" class="vacio">
+            <div class="vacio__icono"><svg class="ico ico--xl"><use href="#i-inspector"/></svg></div>
+            <h3 class="mono">Sin archivo .mc</h3>
+            <p>Arrastra un archivo .mc o usa el que acabas de comprimir para ver cómo está organizado por dentro.</p>
+          </div>
+          <div id="isub-estructura" class="isubpanel activo"><div id="insp-estructura"></div></div>
+          <div id="isub-bytes" class="isubpanel"><div id="insp-bytes"></div></div>
+          <div id="isub-tabla" class="isubpanel">
+            <div class="tabla-scroll">
+              <table class="tabla" id="insp-tabla">
+                <thead><tr><th>Símbolo</th><th class="num">Frecuencia (guardada)</th><th>Probabilidad</th><th>Código reconstruido</th><th class="num">Bits</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="isub-arbol" class="isubpanel">
+            <div class="barra">
+              <span class="tenue pequeno">Árbol reconstruido a partir de la tabla de frecuencias guardada en el archivo</span>
+              <div class="barra__zoom">
+                <button class="btn-icono" id="insp-zoom-mas" title="Acercar"><svg class="ico"><use href="#i-mas"/></svg></button>
+                <button class="btn-icono" id="insp-zoom-menos" title="Alejar"><svg class="ico"><use href="#i-menos"/></svg></button>
+              </div>
+            </div>
+            <div id="insp-lienzo" class="lienzo lineas"></div>
+          </div>
+          <div id="isub-texto" class="isubpanel">
+            <div id="insp-verificacion" class="verificacion"></div>
+            <pre id="insp-texto" class="caja-texto caja-texto--alta"><span class="tenue cursiva">Presiona DESCOMPRIMIR para recuperar el texto.</span></pre>
+          </div>
+        </div>
+      </section>
+    </section>
+
     <!-- ============================================================ MST -->
     <section id="panel-mst" class="panel">
       <div class="mst">
@@ -319,6 +412,16 @@
           <p>Se cuentan las <b>palabras vacías</b> de cada idioma (artículos, preposiciones, conjunciones: <i>de, la, que, the, and, der, und…</i>).
             Forman casi la mitad de cualquier texto, así que el idioma con más coincidencias es el del libro. Las letras propias (ñ, ç, ß, ã) suman un poco más.
             Antes se quita el encabezado de Gutenberg, que siempre está en inglés.</p>
+        </article>
+        <article class="vidrio explicacion__ancha">
+          <h2 class="rotulo rotulo--violeta"><svg class="ico"><use href="#i-inspector"/></svg> El formato .mc y el Inspector</h2>
+          <p>El archivo comprimido tiene un formato propio, <code>.mc</code> (versión 2). No guarda el texto: guarda un
+            <b>encabezado</b> (firma <code>HMC</code>, versión, tamaño original, número de caracteres, bits válidos, bits de relleno,
+            fecha, <b>SHA-256</b> del original, codificación y nombre), la <b>tabla de frecuencias</b> para reconstruir el árbol y
+            los <b>datos</b>: los bits de Huffman empaquetados en bytes.</p>
+          <p>El <b>Inspector</b> abre un <code>.mc</code> sin tener el <code>.txt</code>: lee el encabezado, reconstruye la tabla,
+            los códigos y el árbol, muestra el mapa de bytes en hexadecimal y los bits. Solo al presionar <b>DESCOMPRIMIR</b> recupera
+            el texto y comprueba su integridad: el tamaño y el SHA-256 del resultado deben coincidir con los guardados.</p>
         </article>
         <article class="vidrio explicacion__ancha equipo">
           <h2 class="rotulo rotulo--rosa"><svg class="ico"><use href="#i-equipo"/></svg> Equipo</h2>

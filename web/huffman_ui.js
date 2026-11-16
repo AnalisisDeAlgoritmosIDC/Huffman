@@ -6,6 +6,8 @@ import { dibujarRadial } from "./arbol_radial.js";
 import { montarConstruccion, detener as detenerConstruccion } from "./construccion.js";
 import { montarAhorro, actualizarAhorro } from "./ahorro.js";
 import { montarIdioma } from "./idioma_ui.js";
+import { abrirEnInspector } from "./inspector.js";
+import { marcarHasta } from "./flujo.js";
 
 const $ = (id) => document.getElementById(id);
 const RUTA_TXT = CARPETA + "/original.txt";
@@ -17,6 +19,7 @@ let datos = null;   // resultado de analizar()
 let comp = null;    // resultado de comprimir()
 let dec = null;     // resultado de descomprimir()
 let nombreBase = "libro";
+let nombreOriginal = "libro.txt";
 let vista = "jerarquico";
 let vistaActual = null;
 let escala = 1;
@@ -26,10 +29,11 @@ let bitsCompletos = "";
 export function iniciarHuffman() {
   $("btn-codificar").addEventListener("click", codificar);
   $("btn-decodificar").addEventListener("click", decodificar);
+  $("btn-inspeccionar").addEventListener("click", () => abrirEnInspector(leer(RUTA_HUF), nombreBase + ".mc"));
   $("btn-bajar-huf").addEventListener("click", () =>
     descargar(leer(RUTA_HUF), nombreBase + ".mc", "application/octet-stream"));
   $("btn-bajar-txt").addEventListener("click", () =>
-    descargar(leer(RUTA_DEC), nombreBase + "_decodificado.txt", "text/plain"));
+    descargar(leer(RUTA_DEC), nombreBase + "_recuperado.txt", "text/plain"));
   $("btn-copiar").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(bitsCompletos);
@@ -52,7 +56,7 @@ export function iniciarHuffman() {
     dibujar();
   });
 
-  document.querySelectorAll(".pestana").forEach((b) =>
+  document.querySelectorAll(".pestana[data-sub]").forEach((b) =>
     b.addEventListener("click", () => mostrarSub(b.dataset.sub)));
 
   $("tabla-codigos").addEventListener("click", (e) => {
@@ -81,7 +85,7 @@ function seleccionarVista(nombre) {
 }
 
 function mostrarSub(id) {
-  document.querySelectorAll(".pestana").forEach((b) => b.classList.toggle("activa", b.dataset.sub === id));
+  document.querySelectorAll(".pestana[data-sub]").forEach((b) => b.classList.toggle("activa", b.dataset.sub === id));
   document.querySelectorAll(".subpanel").forEach((p) => p.classList.toggle("activo", p.id === id));
   if (id === "sub-arbol" && datos && !vistaActual) dibujar();
   if (id !== "sub-arbol") detenerConstruccion();
@@ -89,7 +93,12 @@ function mostrarSub(id) {
 
 /** Recibe los bytes del libro (de Gutenberg o subido) y lo analiza en Python. */
 export async function cargarLibro(bytes, titulo, detalle, nombreArchivo) {
+  if (!bytes || bytes.length === 0) {
+    aviso("El archivo está vacío: no hay nada que comprimir.", "error");
+    return;
+  }
   nombreBase = (nombreArchivo || titulo).replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "_").slice(0, 60) || "libro";
+  nombreOriginal = /\.txt$/i.test(nombreArchivo || "") ? nombreArchivo : nombreBase + ".txt";
   await ocupado("Contando frecuencias, construyendo el árbol y detectando el idioma…", () => {
     borrar(RUTA_HUF);
     borrar(RUTA_DEC);
@@ -108,14 +117,16 @@ export async function cargarLibro(bytes, titulo, detalle, nombreArchivo) {
     datos.distintos + " distintos", datos.codificacion].filter(Boolean).join(" · ");
   $("btn-codificar").disabled = false;
   $("btn-decodificar").disabled = true;
+  $("btn-inspeccionar").disabled = true;
   $("btn-bajar-huf").disabled = true;
   $("btn-bajar-txt").disabled = true;
   $("btn-copiar").disabled = true;
   estado("ÁRBOL CONSTRUIDO");
+  marcarHasta(3);
 
   llenarTabla();
   $("txt-original").textContent = recorte(datos.muestra, datos.caracteres);
-  $("txt-bits").innerHTML = '<span class="tenue cursiva">Presiona CODIFICAR para ver la cadena de bits…</span>';
+  $("txt-bits").innerHTML = '<span class="tenue cursiva">Presiona COMPRIMIR para ver la cadena de bits…</span>';
   $("txt-decodificado").innerHTML = '<span class="tenue cursiva">El texto reconstruido aparecerá aquí…</span>';
   montarAhorro($("ahorro"), datos, null);
   montarIdioma($("idioma-detalle"), datos.idioma);
@@ -123,11 +134,13 @@ export async function cargarLibro(bytes, titulo, detalle, nombreArchivo) {
   mostrarSub("sub-arbol");
   dibujar();
   aviso(`Libro analizado: ${datos.distintos} caracteres distintos · idioma ${datos.idioma.nombre}.`, "ok");
-  if (datos.original > 2 * 1024 * 1024) aviso("Libro grande: codificar y decodificar puede tardar unos segundos.");
+  if (datos.original > 2 * 1024 * 1024) aviso("Libro grande: comprimir y descomprimir puede tardar unos segundos.");
 }
 
 async function codificar() {
-  await ocupado("Codificando y escribiendo el archivo .mc…", () => { comp = py("comprimir()"); });
+  await ocupado("Codificando y escribiendo el archivo .mc…", () => {
+    comp = py(`comprimir(${JSON.stringify(nombreOriginal)})`);
+  });
   dec = null;
   bitsCompletos = comp.muestra_bits;
   const muestra = comp.muestra_bits.slice(0, LIMITE_BITS_VISTA);
@@ -137,15 +150,18 @@ async function codificar() {
   }
   if (comp.bits > muestra.length) html += `<span class="tenue"> … ${miles(comp.bits)} bits en total</span>`;
   $("txt-bits").innerHTML = html;
-  $("txt-decodificado").innerHTML = '<span class="tenue cursiva">Presiona DECODIFICAR para reconstruir el texto…</span>';
+  $("txt-decodificado").innerHTML = '<span class="tenue cursiva">Presiona DESCOMPRIMIR para reconstruir el texto…</span>';
   $("btn-decodificar").disabled = false;
+  $("btn-inspeccionar").disabled = false;
   $("btn-bajar-huf").disabled = false;
   $("btn-bajar-txt").disabled = true;
   $("btn-copiar").disabled = false;
-  estado("CODIFICADO");
+  estado("COMPRIMIDO");
+  marcarHasta(4);
   actualizarMetricas();
   actualizarAhorro(comp);
-  aviso(`Codificado: ${formatoBytes(datos.original)} → ${formatoBytes(comp.huf)} (${comp.ahorro.toFixed(2)} % menos).`, "ok");
+  document.dispatchEvent(new CustomEvent("mc-generado", { detail: { nombre: nombreBase + ".mc" } }));
+  aviso(`Comprimido: ${formatoBytes(datos.original)} → ${formatoBytes(comp.huf)} (${miles(comp.ahorrados)} bytes menos, ${comp.ahorro.toFixed(2)} %).`, "ok");
 }
 
 async function decodificar() {
@@ -153,23 +169,11 @@ async function decodificar() {
   $("txt-decodificado").textContent = recorte(dec.muestra, dec.caracteres);
   $("btn-bajar-txt").disabled = false;
   estado(dec.identico === false ? "DIFERENCIAS" : "VERIFICADO");
+  marcarHasta(6);
   actualizarMetricas();
   mostrarSub("sub-bits");
-  if (dec.identico) aviso("¡Decodificación exitosa! El archivo es idéntico al original byte por byte.", "ok");
-  else if (dec.identico === false) aviso("El archivo decodificado no coincide con el original.", "error");
-}
-
-/** Decodifica un .mc subido por el usuario y luego lo carga como libro. */
-export async function decodificarArchivoHuf(bytes, nombre) {
-  await ocupado("Decodificando " + nombre + "…", () => {
-    borrar(RUTA_TXT);
-    escribir(RUTA_HUF, bytes);
-    py("descomprimir()");
-  });
-  const texto = leer(RUTA_DEC);
-  await cargarLibro(texto, nombre + " (decodificado)", "decodificado de un .mc", nombre);
-  await codificar();
-  await decodificar();
+  if (dec.identico && dec.sha256_ok) aviso("¡Descompresión exitosa! Idéntico al original byte por byte y con el mismo SHA-256.", "ok");
+  else if (dec.identico === false || dec.sha256_ok === false) aviso("El archivo recuperado no coincide con el original.", "error");
 }
 
 // ------------------------------------------------------------------ vistas
@@ -223,11 +227,11 @@ function cambiarZoom(f) {
 
 function actualizarMetricas() {
   $("m-original").textContent = formatoBytes(datos.original);
-  $("m-original-sub").textContent = `${miles(datos.original * 8)} bits (${datos.fijo.toFixed(0)} b/car)`;
+  $("m-original-sub").textContent = `${miles(datos.original)} bytes · ${miles(datos.distintos)} símbolos`;
   $("m-huf").textContent = comp ? formatoBytes(comp.huf) : "—";
-  $("m-huf-sub").textContent = comp ? `${miles(comp.bits)} bits + tabla` : "presiona CODIFICAR";
+  $("m-huf-sub").textContent = comp ? `${miles(comp.huf)} bytes` : "presiona COMPRIMIR";
   $("m-ahorro").textContent = comp ? comp.ahorro.toFixed(2) + " %" : "—";
-  $("m-ahorro-sub").textContent = comp ? `${formatoBytes(datos.original - comp.huf)} ahorrados` : "—";
+  $("m-ahorro-sub").textContent = comp ? `${miles(comp.ahorrados)} B (${formatoBytes(comp.ahorrados)}) ahorrados` : "—";
   $("m-entropia").textContent = datos.entropia.toFixed(3) + " b";
   $("m-bits").textContent = `Prom. código: ${datos.prom.toFixed(3)} bits · ef. ${datos.eficiencia.toFixed(1)} %`;
   const idioma = datos.idioma;
@@ -239,11 +243,11 @@ function actualizarMetricas() {
   if (dec && dec.identico !== null) {
     v.textContent = dec.identico ? "✔ Idénticos" : "✘ Difieren";
     v.className = "tm-valor " + (dec.identico ? "fucsia" : "rosa");
-    $("m-verif-sub").textContent = `decodificado en ${(dec.t_dec * 1000).toFixed(0)} ms`;
+    $("m-verif-sub").textContent = `byte a byte y SHA-256 ${dec.sha256_ok ? "✔" : "✘"} · ${(dec.t_dec * 1000).toFixed(0)} ms`;
   } else {
     v.textContent = "—";
     v.className = "tm-valor";
-    $("m-verif-sub").textContent = "Se comprueba byte por byte";
+    $("m-verif-sub").textContent = "Se comprueba byte a byte y con SHA-256";
   }
   const pct = comp ? Math.max(0, Math.min(100, comp.ahorro)) : 0;
   $("progreso-relleno").style.width = pct + "%";
@@ -254,7 +258,9 @@ function actualizarMetricas() {
     ["Bits codificados (solo datos)", comp ? `${formatoBytes(comp.datos)} (${miles(comp.bits)} bits)` : "—"],
     ["Archivo .mc (datos + tabla)", comp ? `${formatoBytes(comp.huf)} (${miles(comp.huf)} B)` : "—"],
     ["Razón de compresión", comp ? comp.razon.toFixed(3) + " : 1" : "—"],
-    ["Espacio ahorrado", comp ? comp.ahorro.toFixed(2) + " %" : "—"],
+    ["Bytes ahorrados", comp ? `${miles(comp.ahorrados)} B (${formatoBytes(comp.ahorrados)})` : "—"],
+    ["Porcentaje de reducción", comp ? comp.ahorro.toFixed(2) + " %" : "—"],
+    ["Símbolos diferentes", miles(datos.distintos)],
     ["Bits promedio por carácter", datos.prom.toFixed(4) + " bits"],
     ["Bits por carácter sin comprimir", datos.fijo.toFixed(2) + " bits"],
     ["Entropía de Shannon", datos.entropia.toFixed(4) + " bits"],
@@ -264,7 +270,8 @@ function actualizarMetricas() {
     ["Tiempo de análisis", (datos.t_analisis * 1000).toFixed(1) + " ms"],
     ["Tiempo de codificación", comp ? (comp.t_cod * 1000).toFixed(1) + " ms" : "—"],
     ["Tiempo de decodificación", dec ? (dec.t_dec * 1000).toFixed(1) + " ms" : "—"],
-    ["Decodificado = original", dec && dec.identico !== null ? (dec.identico ? "✔ idénticos" : "✘ difieren") : "—"],
+    ["Recuperado = original (byte a byte)", dec && dec.identico !== null ? (dec.identico ? "✔ idénticos" : "✘ difieren") : "—"],
+    ["SHA-256 recuperado = guardado", dec ? (dec.sha256_ok ? "✔ coincide" : "✘ no coincide") : "—"],
   ];
   $("tabla-resultados").querySelector("tbody").innerHTML =
     filas.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("");

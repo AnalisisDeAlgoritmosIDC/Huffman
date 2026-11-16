@@ -2,11 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+node_modules/
+.wrangler/
 .idea/
 .vscode/
 .DS_Store
-# Archivos que genera la app al probarla (las salidas de ejemplo sí se suben en salidas/)
-*.mc
-!salidas/*.mc
-*_decodificado.txt
-!salidas/*_decodificado.txt

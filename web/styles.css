@@ -349,6 +349,41 @@ input[type=range] { accent-color: var(--fucsia); }
 .ranking-fila--gana .bc-barra i { background: linear-gradient(90deg, var(--rosa), var(--fucsia)); box-shadow: 0 0 10px rgba(244, 63, 94, .6); }
 .fichas { display: flex; flex-wrap: wrap; gap: 6px; }
 
+/* ---------------------------------------------------------------- flujo */
+.flujo { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; counter-reset: paso; }
+.flujo li { position: relative; display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 12px; cursor: pointer;
+  font: 600 11px var(--mono); color: var(--tenue); background: rgba(2, 6, 23, .6); border: 1px solid rgba(74, 4, 78, .8); transition: .25s; }
+.flujo li:hover { border-color: rgba(217, 70, 239, .6); color: var(--texto-2); }
+.flujo__n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 11px;
+  color: var(--tenue); border: 1.5px solid rgba(134, 25, 143, .8); background: #0f0210; }
+.flujo li.hecho { color: #fce7f3; border-color: rgba(217, 70, 239, .45); background: rgba(74, 4, 78, .35); }
+.flujo li.hecho .flujo__n { color: #fff; border: 0; background: linear-gradient(135deg, #e11d48, #9333ea); }
+.flujo li.hecho .flujo__n::before { content: "✓"; }
+.flujo li.hecho .flujo__n { font-size: 0; }
+.flujo li.hecho .flujo__n::before { font-size: 12px; }
+.flujo li.actual { color: #fff; border-color: var(--rosa); box-shadow: 0 0 18px rgba(244, 63, 94, .35); }
+.flujo li.actual .flujo__n { color: #fff; border-color: var(--rosa); animation: latido 1.6s ease-in-out infinite; }
+
+/* ---------------------------------------------------------------- inspector */
+.rejilla-superior--inspector .entrada { justify-content: flex-start; }
+.isubpanel { display: none; }
+.isubpanel.activo { display: block; animation: aparecer .25s ease; }
+.mapa { display: flex; height: 30px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(74, 4, 78, .9); }
+.mapa__seg { height: 100%; border-right: 2px solid #070108; opacity: .9; }
+.mapa__seg:last-child { border-right: 0; }
+.punto-color { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
+.hex { font: 12px/1.7 var(--mono); background: var(--negro); border: 1px solid rgba(74, 4, 78, .9); border-radius: 12px; padding: 12px 14px; overflow-x: auto; }
+.hex__fila { display: flex; gap: 18px; white-space: nowrap; }
+.hex__off { color: rgba(249, 168, 212, .4); }
+.hex__bytes { min-width: 47ch; }
+.hex__ascii { color: rgba(251, 207, 232, .7); letter-spacing: .05em; }
+.hash { font-family: var(--mono); font-size: 11px; word-break: break-all; color: #86efac; }
+.verificacion__caja { margin-bottom: 14px; border-color: rgba(74, 222, 128, .45); }
+.verificacion__caja h3 { color: #86efac !important; }
+.verificacion__caja--mal { border-color: var(--rosa); }
+.verificacion__caja--mal h3 { color: var(--rosa-400) !important; }
+.caja-texto--alta { height: 380px; }
+
 /* ---------------------------------------------------------------- MST */
 .mst { display: grid; grid-template-columns: 250px 1fr 320px; gap: 20px; align-items: start; }
 .mst__controles { display: flex; flex-direction: column; gap: 12px; }
@@ -399,6 +434,7 @@ input[type=range] { accent-color: var(--fucsia); }
 
 /* ---------------------------------------------------------------- responsivo */
 @media (max-width: 1100px) {
+  .flujo { grid-template-columns: repeat(3, 1fr); }
   .rejilla-superior, .ahorro, .idioma { grid-template-columns: 1fr; }
   .equipo__lista { grid-template-columns: 1fr 1fr; }
   .mst { grid-template-columns: 1fr; }
@@ -406,6 +442,7 @@ input[type=range] { accent-color: var(--fucsia); }
   .mst__controles .rotulo, .mst__resultado { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
+  .flujo { grid-template-columns: 1fr 1fr; }
   .contenedor, .encabezado__fila { padding-left: 16px; padding-right: 16px; }
   main.contenedor { padding-top: 16px; }
   .marca__sub, .nav-btn span { display: none; }

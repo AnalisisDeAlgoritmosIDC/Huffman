@@ -37,7 +37,9 @@ def medir_huffman():
         bits = codificar(texto, codigos)
         with tempfile.TemporaryDirectory() as tmp:
             huf = os.path.join(tmp, "x.mc")
-            tam_huf = guardar_comprimido(huf, frec, bits, cod)
+            with open(ruta, "rb") as f:
+                datos_originales = f.read()
+            tam_huf = guardar_comprimido(huf, frec, bits, cod, datos_originales, os.path.basename(ruta))
             t3 = time.perf_counter()
             recuperado = descomprimir_archivo(huf)
             t4 = time.perf_counter()

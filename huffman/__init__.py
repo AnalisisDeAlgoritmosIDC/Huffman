@@ -3,6 +3,7 @@ from .frecuencias import leer_texto, calcular_frecuencias, ordenar_frecuencias, 
 from .arbol import Nodo, construir_arbol, altura, contar_nodos
 from .codigos import generar_codigos, es_codigo_prefijo
 from .codificador import (
-    codificar, decodificar, guardar_comprimido, leer_comprimido, descomprimir_archivo,
+    codificar, decodificar, guardar_comprimido, leer_comprimido, leer_mc,
+    descomprimir_archivo, descomprimir_y_verificar,
 )
 from .estadisticas import longitud_promedio, entropia, comparar_tamanos, formatear_bytes

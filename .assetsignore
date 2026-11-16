@@ -8,6 +8,11 @@ tests/
 analisis/
 libros/
 capturas/
+pruebas/
+docs/
+FORMATO.md
+PRUEBAS.md
+BACKLOG.md
 salidas/
 reporte/
 requirements.txt

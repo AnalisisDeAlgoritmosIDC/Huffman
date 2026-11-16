@@ -2,7 +2,8 @@
 // y carga de archivos propios (.txt o .mc) con arrastrar y soltar.
 
 import { escaparHTML, miles, ocupado, aviso } from "./python.js";
-import { cargarLibro, decodificarArchivoHuf } from "./huffman_ui.js";
+import { cargarLibro } from "./huffman_ui.js";
+import { abrirEnInspector } from "./inspector.js";
 
 const $ = (id) => document.getElementById(id);
 let busqueda = { q: "", idioma: "", pagina: 1 };
@@ -43,7 +44,7 @@ async function abrirArchivo(archivo) {
   const nombre = archivo.name.toLowerCase();
   try {
     if (nombre.endsWith(".mc")) {
-      await decodificarArchivoHuf(bytes, archivo.name);
+      await abrirEnInspector(bytes, archivo.name);
     } else if (nombre.endsWith(".txt") || archivo.type.startsWith("text/")) {
       await cargarLibro(prepararTexto(bytes), archivo.name, "archivo propio", archivo.name);
     } else {
